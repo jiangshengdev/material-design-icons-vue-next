@@ -56,5 +56,5 @@ export async function format(
   );
   const defaultOptions = JSON.parse(defaultOptionBuffer.toString());
   const options = Object.assign({}, defaultOptions, userOptions);
-  return prettier.format(content, options);
+  return await prettier.format(content, options);
 }
