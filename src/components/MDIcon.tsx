@@ -13,7 +13,7 @@ let MDIconImpl = {
   },
 };
 
-export const MDIcon = (MDIconImpl as unknown) as {
+export const MDIcon = MDIconImpl as unknown as {
   new (): {
     $props: VNodeProps & MDIconProps & HTMLAttributes & VueComponentProps;
   };
