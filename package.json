@@ -1,5 +1,5 @@
 {
-  "name": "@em2046/material-design-icons-vue-next",
+  "name": "@jiangshengdev/material-design-icons-vue-next",
   "version": "1.0.0-alpha.6",
   "license": "MIT",
   "files": [
@@ -17,7 +17,7 @@
     "build": "yarn gulp:icon && yarn gulp:style && yarn gulp:lib",
     "build:demo": "vite build",
     "prettier": "prettier --write {src,build,tests}/**/*.{js,jsx,ts,tsx,css,vue}",
-    "prepublishOnly": "yarn prettier && yarn build"
+    "prepublishOnly": "yarn build"
   },
   "dependencies": {
     "vue": "^3.0.4"
@@ -46,7 +46,7 @@
     "lodash": "^4.17.20",
     "material-design-icons": "^3.0.1",
     "prettier": "^2.2.1",
-    "puppeteer": "^5.5.0",
+    "puppeteer": "^24.31.0",
     "rollup": "^2.35.1",
     "through2": "^4.0.2",
     "ts-jest": "^26.4.4",
