@@ -1,10 +1,10 @@
-import puppeteer from 'puppeteer';
+import type { Page } from 'playwright';
 import through2 from 'through2';
 import { iconTemplate } from '../templates/icon-template';
 import { getComponentName } from '../helpers';
 import rename from 'gulp-rename';
 
-async function svgConvert(page: puppeteer.Page, xml: string): Promise<string> {
+async function svgConvert(page: Page, xml: string): Promise<string> {
   return await page.evaluate((xml) => {
     const wrap = document.createElement('div');
     wrap.innerHTML = xml;
@@ -19,7 +19,7 @@ async function svgConvert(page: puppeteer.Page, xml: string): Promise<string> {
   }, xml);
 }
 
-export function iconDefinition(page: puppeteer.Page) {
+export function iconDefinition(page: Page) {
   return through2.obj(async (chunk, enc, callback) => {
     const fileName = chunk.stem;
     const xml = chunk.contents.toString(enc);

@@ -1,7 +1,7 @@
 import path from 'path';
 import { dest, src } from 'gulp';
 import materialDesignIcons from 'material-design-icons';
-import puppeteer from 'puppeteer';
+import { chromium, Page } from 'playwright';
 import {
   duplicateDetection,
   iconDefinition,
@@ -14,7 +14,7 @@ const iconSet = new Set<string>();
 
 function generateIcon(
   file: { path: string | string[] },
-  page: puppeteer.Page,
+  page: Page,
   iconCategory: string
 ): Promise<null> {
   return new Promise((resolve) => {
@@ -31,7 +31,7 @@ function generateIcon(
 }
 
 export default async function generateIcons() {
-  const browser = await puppeteer.launch();
+  const browser = await chromium.launch();
   const page = await browser.newPage();
   const iconPath = materialDesignIcons.STATIC_PATH;
 
