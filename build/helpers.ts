@@ -79,7 +79,9 @@ export async function transformExportsToIndividual(
   const afterExportStart = content.substring(exportMatch.index);
 
   // 提取 export { ... } 中的所有导出项
-  const exportBlockMatch = afterExportStart.match(/^export\s*\{([^}]+)\};?\s*$/ms);
+  const exportBlockMatch = afterExportStart.match(
+    /^export\s*\{([^}]+)\};?\s*$/ms
+  );
   if (!exportBlockMatch) {
     console.log('Could not parse export statement, skipping transformation');
     return;
