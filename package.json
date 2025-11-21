@@ -10,7 +10,7 @@
   "module": "./dist/index.esm.js",
   "typings": "./dist/index.d.ts",
   "scripts": {
-    "dev": "vite --https",
+    "dev": "vite",
     "gulp:icon": "tsx ./node_modules/gulp/bin/gulp.js icon",
     "gulp:style": "tsx ./node_modules/gulp/bin/gulp.js style",
     "gulp:lib": "tsx ./node_modules/gulp/bin/gulp.js lib",
