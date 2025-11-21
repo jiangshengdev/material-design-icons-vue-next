@@ -79,6 +79,7 @@ export async function transformExportsToIndividual(
   const afterExportStart = content.substring(exportMatch.index);
 
   // 提取 export { ... } 中的所有导出项
+  // 注意：使用 ms 标志允许跨越多行匹配，[^}]+ 会匹配包括换行符在内的所有非 } 字符
   const exportBlockMatch = afterExportStart.match(
     /^export\s*\{([^}]+)\};?\s*$/ms
   );
@@ -91,6 +92,7 @@ export async function transformExportsToIndividual(
 
   // 将导出项分割成单独的名称
   // 注意：这假设导出项都是简单的标识符，没有 'as' 别名或复杂模式
+  // split(',') 会按逗号分割，trim() 会移除所有空白字符（包括换行符）
   const exportNames = exportsContent
     .split(',')
     .map((name) => name.trim())
