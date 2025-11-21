@@ -90,10 +90,23 @@ export async function transformExportsToIndividual(
   const exportsContent = exportBlockMatch[1];
 
   // 将导出项分割成单独的名称
+  // 注意：这假设导出项都是简单的标识符，没有 'as' 别名或复杂模式
   const exportNames = exportsContent
     .split(',')
     .map((name) => name.trim())
     .filter((name) => name.length > 0);
+
+  // 验证所有导出项都是简单标识符（安全检查）
+  const allSimpleIdentifiers = exportNames.every((name) =>
+    /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(name)
+  );
+
+  if (!allSimpleIdentifiers) {
+    console.warn(
+      'Warning: Some export names contain complex patterns. Transformation may not be accurate.'
+    );
+    // 继续处理，但发出警告
+  }
 
   // 生成独立的 export 语句
   const individualExports = exportNames
