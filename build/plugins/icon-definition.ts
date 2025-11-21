@@ -1,29 +1,28 @@
-import type { Page } from 'playwright';
+import { load } from 'cheerio';
 import through2 from 'through2';
 import { iconTemplate } from '../templates/icon-template';
 import { getComponentName } from '../helpers';
 import rename from 'gulp-rename';
 
-async function svgConvert(page: Page, xml: string): Promise<string> {
-  return await page.evaluate((xml) => {
-    const wrap = document.createElement('div');
-    wrap.innerHTML = xml;
-    const svg = wrap.querySelector('svg');
+async function svgConvert(xml: string): Promise<string> {
+  const $ = load(xml, { xmlMode: true });
+  const svg = $('svg').first();
 
-    svg?.setAttribute('fill', 'currentColor');
-    svg?.setAttribute('width', '1em');
-    svg?.setAttribute('height', '1em');
-    svg?.removeAttribute('xmlns');
+  if (svg.length) {
+    svg.attr('fill', 'currentColor');
+    svg.attr('width', '1em');
+    svg.attr('height', '1em');
+    svg.removeAttr('xmlns');
+  }
 
-    return wrap.innerHTML;
-  }, xml);
+  return $.root().html() ?? '';
 }
 
-export function iconDefinition(page: Page) {
+export function iconDefinition() {
   return through2.obj(async (chunk, enc, callback) => {
     const fileName = chunk.stem;
     const xml = chunk.contents.toString(enc);
-    const inlineXML = await svgConvert(page, xml);
+    const inlineXML = await svgConvert(xml);
     const vueComponent = iconTemplate(inlineXML, fileName);
     chunk.contents = Buffer.from(vueComponent);
     callback(null, chunk);

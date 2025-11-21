@@ -1,7 +1,6 @@
 import path from 'path';
 import { dest, src } from 'gulp';
 import materialDesignIcons from 'material-design-icons';
-import { chromium, Page } from 'playwright';
 import {
   duplicateDetection,
   iconDefinition,
@@ -14,13 +13,12 @@ const iconSet = new Set<string>();
 
 function generateIcon(
   file: { path: string | string[] },
-  page: Page,
   iconCategory: string
 ): Promise<null> {
   return new Promise((resolve) => {
     src(file.path)
       .pipe(duplicateDetection(iconSet))
-      .pipe(iconDefinition(page))
+      .pipe(iconDefinition())
       .pipe(iconRename())
       .pipe(prettierFormat())
       .pipe(dest(`src/icons/${iconCategory}`))
@@ -31,8 +29,6 @@ function generateIcon(
 }
 
 export default async function generateIcons() {
-  const browser = await chromium.launch();
-  const page = await browser.newPage();
   const iconPath = materialDesignIcons.STATIC_PATH;
 
   const processes = iconCategories.map((iconCategory) => {
@@ -41,7 +37,7 @@ export default async function generateIcons() {
       const subProcesses: Promise<null>[] = [];
       src(svgFullSelector)
         .on('data', (file) => {
-          subProcesses.push(generateIcon(file, page, iconCategory));
+          subProcesses.push(generateIcon(file, iconCategory));
         })
         .on('end', () => {
           Promise.all(subProcesses).then(() => {
@@ -52,6 +48,4 @@ export default async function generateIcons() {
   });
 
   await Promise.all(processes);
-
-  return await browser.close();
 }
