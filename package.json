@@ -1,6 +1,6 @@
 {
   "name": "@jiangshengdev/material-design-icons-vue-next",
-  "version": "1.0.0-alpha.9",
+  "version": "1.0.0-alpha.10",
   "license": "MIT",
   "files": [
     "dist",
@@ -9,6 +9,12 @@
   "main": "./dist/index.js",
   "module": "./dist/index.esm.js",
   "typings": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.js"
+    }
+  },
   "scripts": {
     "dev": "vite",
     "gulp:icon": "tsx ./node_modules/gulp/bin/gulp.js icon",
