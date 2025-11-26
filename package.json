@@ -1,6 +1,6 @@
 {
   "name": "@jiangshengdev/material-design-icons-vue-next",
-  "version": "1.0.0-alpha.10",
+  "version": "1.0.0-alpha.11",
   "license": "MIT",
   "files": [
     "dist",
@@ -11,6 +11,7 @@
   "typings": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.esm.js",
       "require": "./dist/index.js"
     }
