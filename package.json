@@ -74,6 +74,7 @@
     "@vue/test-utils": "^2.4.6",
     "@vue/tsconfig": "^0.8.1",
     "cheerio": "^1.1.2",
+    "bumpp": "^10.3.1",
     "eslint": "^9.37.0",
     "eslint-plugin-oxlint": "~1.23.0",
     "eslint-plugin-playwright": "^2.2.2",
