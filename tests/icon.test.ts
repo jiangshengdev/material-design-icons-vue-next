@@ -1,12 +1,13 @@
 import { mount } from '@vue/test-utils';
-import globby from 'globby';
+import { describe, expect, test, vi } from 'vitest'
+import {globby} from 'globby';
 import fs from 'fs';
 import path from 'path';
 
 const fsPromises = fs.promises;
 
 describe('icon', () => {
-  jest.setTimeout(60 * 1000);
+  vi.setConfig({ testTimeout: 60 * 1000 })
 
   test('render', async () => {
     const src = 'src/icons';
