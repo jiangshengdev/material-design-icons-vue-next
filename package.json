@@ -46,7 +46,7 @@
     "lint": "run-s lint:*",
     "format": "prettier --write e2e/ playground/ scripts/ src/ tests/",
     "release": "bumpp && pnpm publish",
-    "prepublishOnly": "pnpm run build && pnpm run styles:build"
+    "prepublishOnly": "pnpm run gulp:icon && pnpm run build"
   },
   "dependencies": {
     "pinia": "^3.0.3",
