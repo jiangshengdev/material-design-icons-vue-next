@@ -11,14 +11,14 @@
     "play": "vite",
     "play:build": "run-p type-check \"play:build-only {@}\" --",
     "preview": "vite preview",
-    "test:unit": "vitest",
+    "test:unit": "vitest run",
     "test:e2e": "playwright test",
     "play:build-only": "vite build",
     "type-check": "vue-tsc --build",
     "lint:oxlint": "oxlint . --fix -D correctness --ignore-path .gitignore",
     "lint:eslint": "eslint . --fix --cache",
     "lint": "run-s lint:*",
-    "format": "prettier --write playground/ scripts/ src/ tests/"
+    "format": "prettier --write e2e/ playground/ scripts/ src/ tests/"
   },
   "dependencies": {
     "pinia": "^3.0.3",
