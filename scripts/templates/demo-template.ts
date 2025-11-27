@@ -1,15 +1,15 @@
-import { getComponentName, getDisplayName, getListName } from '../helpers';
-import { upperFirst } from 'lodash-es';
+import { getComponentName, getDisplayName, getListName } from '../helpers'
+import { upperFirst } from 'lodash-es'
 
 export function itemTemplate(category: string, fileName: string) {
   return `<li>
   <MDI.${getComponentName(fileName)} />
   <span class="icon-name">${getDisplayName(fileName)}</span>
-</li>`;
+</li>`
 }
 
 export function listTemplate(category: string, items: string) {
-  const listName = getListName(category);
+  const listName = getListName(category)
 
   return `import { defineComponent } from 'vue';
 import * as MDI from '../../index';
@@ -23,21 +23,21 @@ export default defineComponent({
 </div>);
   },
 });
-`;
+`
 }
 
 export function indexTemplate(category: string) {
-  const listName = getListName(category);
+  const listName = getListName(category)
 
   return `import ${listName} from './${listName}';
 export { ${listName} };
-`;
+`
 }
 
 export function paneTemplate(category: string) {
-  const listName = getListName(category);
+  const listName = getListName(category)
 
-  return `<panes.${listName} />`;
+  return `<panes.${listName} />`
 }
 
 export function panesTemplate(content: string) {
@@ -50,5 +50,5 @@ export default defineComponent({
     return () => (<div class="icon-panes">${content}</div>);
   },
 });
-`;
+`
 }

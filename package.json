@@ -8,17 +8,17 @@
   },
   "scripts": {
     "gulp:icon": "tsx ./node_modules/gulp/bin/gulp.js icon",
-    "dev": "vite",
-    "build": "run-p type-check \"build-only {@}\" --",
+    "play": "vite",
+    "play:build": "run-p type-check \"play:build-only {@}\" --",
     "preview": "vite preview",
     "test:unit": "vitest",
     "test:e2e": "playwright test",
-    "build-only": "vite build",
+    "play:build-only": "vite build",
     "type-check": "vue-tsc --build",
     "lint:oxlint": "oxlint . --fix -D correctness --ignore-path .gitignore",
     "lint:eslint": "eslint . --fix --cache",
     "lint": "run-s lint:*",
-    "format": "prettier --write src/"
+    "format": "prettier --write playground/ scripts/ src/ tests/"
   },
   "dependencies": {
     "pinia": "^3.0.3",

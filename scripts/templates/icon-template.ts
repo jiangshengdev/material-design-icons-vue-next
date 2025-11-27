@@ -1,8 +1,8 @@
-import { getClassName, getComponentName } from '../helpers';
+import { getClassName, getComponentName } from '../helpers'
 
 export function iconTemplate(svg: string, name: string) {
-  const componentName = getComponentName(name);
-  const className = getClassName(name);
+  const componentName = getComponentName(name)
+  const className = getClassName(name)
 
   return `import type { VNodeProps } from 'vue';
 import { MDIcon } from '../../components/MDIcon';
@@ -25,5 +25,5 @@ export const ${componentName} = (${componentName}Impl as unknown) as {
     $props: VNodeProps;
   }
 }
-`;
+`
 }
