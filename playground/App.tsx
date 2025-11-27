@@ -1,5 +1,5 @@
 import { defineComponent } from 'vue'
-import IconPanes from '../src/views/IconPanes'
+import IconPanes from './views/IconPanes'
 
 export default defineComponent({
   setup() {

@@ -12,7 +12,7 @@ export function listTemplate(category: string, items: string) {
   const listName = getListName(category)
 
   return `import { defineComponent } from 'vue';
-import * as MDI from '../../index';
+import * as MDI from '@/index';
 
 export default defineComponent({
   name: '${listName}',

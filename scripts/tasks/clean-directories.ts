@@ -8,7 +8,7 @@ async function removeDir(path: string) {
 }
 
 export async function cleanSrc() {
-  await Promise.all([removeDir('src/icons'), removeDir('src/views/icons')])
+  await Promise.all([removeDir('src/icons'), removeDir('playground/views/icons')])
 }
 
 export async function cleanDist() {

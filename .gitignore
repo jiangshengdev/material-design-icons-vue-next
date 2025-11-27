@@ -39,6 +39,6 @@ test-results/
 playwright-report/
 
 /src/icons/
-/src/views/icons/
-/src/views/IconPanes.tsx
+/playground/views/icons/
+/playground/views/IconPanes.tsx
 /temp/

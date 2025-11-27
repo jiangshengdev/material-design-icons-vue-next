@@ -21,7 +21,7 @@ async function list() {
         .pipe(listDefinition(iconCategory))
         .pipe(prettierFormat())
         .pipe(listRename())
-        .pipe(dest('src/views/icons'))
+        .pipe(dest('playground/views/icons'))
         .on('end', resolve)
     })
   })
@@ -38,7 +38,7 @@ async function index() {
     .concat('\n')
 
   fs.writeFileSync(
-    path.join(__dirname, '../../src/views/icons/index.ts'),
+    path.join(__dirname, '../../playground/views/icons/index.ts'),
     await format(indexContent),
   )
 }
@@ -51,7 +51,7 @@ async function panes() {
     .join('\n')
   const demo = panesTemplate(panesContent)
 
-  fs.writeFileSync(path.join(__dirname, '../../src/views/IconPanes.tsx'), await format(demo))
+  fs.writeFileSync(path.join(__dirname, '../../playground/views/IconPanes.tsx'), await format(demo))
 }
 
 export default async function generateDemo() {
