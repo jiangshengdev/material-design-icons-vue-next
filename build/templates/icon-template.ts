@@ -4,8 +4,7 @@ export function iconTemplate(svg: string, name: string) {
   const componentName = getComponentName(name);
   const className = getClassName(name);
 
-  return `import { VNodeProps } from 'vue';
-import { vueJsxCompat } from '../../vue-jsx-compat';
+  return `import type { VNodeProps } from 'vue';
 import { MDIcon } from '../../components/MDIcon';
 
 let ${componentName}Impl = {
@@ -21,7 +20,7 @@ let ${componentName}Impl = {
   },
 };
 
-export const ${componentName} = (${componentName}Impl as any) as {
+export const ${componentName} = (${componentName}Impl as unknown) as {
   new (): {
     $props: VNodeProps;
   }

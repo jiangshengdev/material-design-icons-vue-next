@@ -1,9 +1,22 @@
-import del from 'del';
+import { rm } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+
+async function removeDir(path: string) {
+  if (existsSync(path)) {
+    await rm(path, { recursive: true, force: true });
+  }
+}
 
 export async function cleanSrc() {
-  return await del(['src/icons', 'src/views/icons']);
+  await Promise.all([
+    removeDir('src/icons'),
+    removeDir('src/views/icons')
+  ]);
 }
 
 export async function cleanDist() {
-  return await del(['dist', 'temp']);
+  await Promise.all([
+    removeDir('dist'),
+    removeDir('temp')
+  ]);
 }

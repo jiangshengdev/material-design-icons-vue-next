@@ -1,5 +1,5 @@
 import { getComponentName, getDisplayName, getListName } from '../helpers';
-import { upperFirst } from 'lodash';
+import { upperFirst } from 'lodash-es';
 
 export function itemTemplate(category: string, fileName: string) {
   return `<li>
@@ -10,8 +10,8 @@ export function itemTemplate(category: string, fileName: string) {
 
 export function listTemplate(category: string, items: string) {
   const listName = getListName(category);
+
   return `import { defineComponent } from 'vue';
-import { vueJsxCompat } from '../../vue-jsx-compat';
 import * as MDI from '../../index';
 
 export default defineComponent({
@@ -28,6 +28,7 @@ export default defineComponent({
 
 export function indexTemplate(category: string) {
   const listName = getListName(category);
+
   return `import ${listName} from './${listName}';
 export { ${listName} };
 `;
@@ -35,12 +36,12 @@ export { ${listName} };
 
 export function paneTemplate(category: string) {
   const listName = getListName(category);
+
   return `<panes.${listName} />`;
 }
 
 export function panesTemplate(content: string) {
   return `import { defineComponent } from 'vue';
-import { vueJsxCompat } from '../vue-jsx-compat';
 import * as panes from './icons';
 
 export default defineComponent({

@@ -6,6 +6,7 @@ import { getListName } from '../helpers';
 export function itemDefinition(iconCategory: string) {
   return through2.obj(async (chunk, enc, callback) => {
     const fileName = chunk.stem;
+
     chunk.contents = Buffer.from(itemTemplate(iconCategory, fileName));
     callback(null, chunk);
   });
@@ -14,6 +15,7 @@ export function itemDefinition(iconCategory: string) {
 export function listDefinition(iconCategory: string) {
   return through2.obj(async (chunk, enc, callback) => {
     const items = chunk.contents;
+
     chunk.contents = Buffer.from(listTemplate(iconCategory, items));
     callback(null, chunk);
   });

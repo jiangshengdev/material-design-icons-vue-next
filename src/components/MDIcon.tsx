@@ -1,20 +1,16 @@
-import { HTMLAttributes, SetupContext, VNodeProps } from 'vue';
-import { VueComponentProps } from '../types/vue-component';
-import { vueJsxCompat } from '../vue-jsx-compat';
+import type { HTMLAttributes, SetupContext, VNodeProps } from 'vue'
 
-export interface MDIconProps {}
-
-let MDIconImpl = {
+const MDIconImpl = {
   name: 'MDIcon',
-  setup(prop: MDIconProps, { slots }: SetupContext) {
+  setup(_prop: object, { slots }: SetupContext) {
     return () => {
-      return <span class="md-icon">{slots.default?.()}</span>;
-    };
+      return <span class="md-icon">{slots.default?.()}</span>
+    }
   },
-};
+}
 
 export const MDIcon = MDIconImpl as unknown as {
   new (): {
-    $props: VNodeProps & MDIconProps & HTMLAttributes & VueComponentProps;
-  };
-};
+    $props: VNodeProps & HTMLAttributes
+  }
+}

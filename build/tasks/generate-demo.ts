@@ -44,6 +44,7 @@ async function index() {
     })
     .join('\n')
     .concat('\n');
+
   fs.writeFileSync(
     path.join(__dirname, '../../src/views/icons/index.ts'),
     await format(indexContent)
@@ -57,6 +58,7 @@ async function panes() {
     })
     .join('\n');
   const demo = panesTemplate(panesContent);
+
   fs.writeFileSync(
     path.join(__dirname, '../../src/views/IconPanes.tsx'),
     await format(demo)

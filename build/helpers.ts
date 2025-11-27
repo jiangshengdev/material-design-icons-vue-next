@@ -1,10 +1,10 @@
-import { camelCase, upperFirst } from 'lodash';
+import { camelCase, upperFirst } from 'lodash-es';
 import prettier, { Options } from 'prettier';
 import path from 'path';
 import fs from 'fs';
 
 const fsPromises = fs.promises;
-const prettierConfigPath = '../.prettierrc';
+const prettierConfigPath = '../.prettierrc.json';
 
 export const iconCategories = [
   'action',
@@ -56,6 +56,7 @@ export async function format(
   );
   const defaultOptions = JSON.parse(defaultOptionBuffer.toString());
   const options = Object.assign({}, defaultOptions, userOptions);
+
   return await prettier.format(content, options);
 }
 
@@ -70,8 +71,10 @@ export async function transformExportsToIndividual(
 
   // 查找 export { ... } 语句的起始位置
   const exportMatch = content.match(/^export\s*\{/m);
+
   if (!exportMatch || !exportMatch.index) {
     console.log('No export statement found, skipping transformation');
+
     return;
   }
 
@@ -83,8 +86,10 @@ export async function transformExportsToIndividual(
   const exportBlockMatch = afterExportStart.match(
     /^export\s*\{([^}]+)\};?\s*$/ms
   );
+
   if (!exportBlockMatch) {
     console.log('Could not parse export statement, skipping transformation');
+
     return;
   }
 

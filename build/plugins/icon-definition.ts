@@ -24,6 +24,7 @@ export function iconDefinition() {
     const xml = chunk.contents.toString(enc);
     const inlineXML = await svgConvert(xml);
     const vueComponent = iconTemplate(inlineXML, fileName);
+
     chunk.contents = Buffer.from(vueComponent);
     callback(null, chunk);
   });

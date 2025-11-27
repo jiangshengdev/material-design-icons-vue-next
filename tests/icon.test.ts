@@ -9,29 +9,30 @@ describe('icon', () => {
   jest.setTimeout(60 * 1000);
 
   test('render', async () => {
-    let src = 'src/icons';
-    let ext = '.tsx';
-    let types = (await fsPromises.readdir(src)).sort();
+    const src = 'src/icons';
+    const ext = '.tsx';
+    const types = (await fsPromises.readdir(src)).sort();
 
     for (const type of types) {
-      let typePath = path.join(src, type);
-      let stats = await fsPromises.stat(typePath);
+      const typePath = path.join(src, type);
+      const stats = await fsPromises.stat(typePath);
 
       if (!stats.isDirectory()) {
         continue;
       }
 
-      let files = (
+      const files = (
         await globby('*' + ext, {
           cwd: typePath,
         })
       ).sort();
 
       for (const file of files) {
-        let relativePath = path.join('..', typePath, file);
-        let imported = await import(relativePath);
-        let component = imported[path.basename(file, ext)];
-        let wrapper = mount(component);
+        const relativePath = path.join('..', typePath, file);
+        const imported = await import(relativePath);
+        const component = imported[path.basename(file, ext)];
+        const wrapper = mount(component);
+
         expect(wrapper.html()).toMatchSnapshot();
       }
     }

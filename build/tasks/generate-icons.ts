@@ -35,6 +35,7 @@ export default async function generateIcons() {
     return new Promise((resolve) => {
       const svgFullSelector = path.join(iconPath, iconCategory, svgSelector);
       const subProcesses: Promise<null>[] = [];
+
       src(svgFullSelector)
         .on('data', (file) => {
           subProcesses.push(generateIcon(file, iconCategory));

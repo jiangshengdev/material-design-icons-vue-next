@@ -14,6 +14,7 @@ async function categoriesIndex() {
     })
     .join('\n')
     .concat('\n');
+
   fs.writeFileSync(
     path.join(__dirname, '../../src/icons/index.ts'),
     await format(indexContent)
@@ -24,6 +25,7 @@ async function categoryIndex() {
   const processes = iconCategories.map((iconCategory) => {
     return new Promise((resolve) => {
       const categoryPath = `src/icons/${iconCategory}`;
+
       src(`${categoryPath}/**.tsx`)
         .pipe(indexDefinition())
         .pipe(cancat('index.ts'))
