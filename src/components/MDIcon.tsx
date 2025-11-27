@@ -1,16 +1,13 @@
-import type { HTMLAttributes, SetupContext, VNodeProps } from 'vue'
+import { defineComponent, type SlotsType } from 'vue'
 
-const MDIconImpl = {
-  name: 'MDIcon',
-  setup(_prop: object, { slots }: SetupContext) {
-    return () => {
-      return <span class="md-icon">{slots.default?.()}</span>
-    }
+export const MDIcon = defineComponent(
+  (_, { slots }) => {
+    return () => <span class="md-icon">{slots.default?.()}</span>
   },
-}
-
-export const MDIcon = MDIconImpl as unknown as {
-  new (): {
-    $props: VNodeProps & HTMLAttributes
-  }
-}
+  {
+    name: 'MDIcon',
+    slots: Object as SlotsType<{
+      default: () => unknown
+    }>,
+  },
+)

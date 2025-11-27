@@ -1,13 +1,39 @@
 {
-  "name": "material-design-icons-vue-next",
-  "version": "0.0.0",
-  "private": true,
+  "name": "@jiangshengdev/material-design-icons-vue-next",
+  "version": "2.0.0-alpha.0",
+  "private": false,
   "type": "module",
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
   },
+  "license": "MIT",
+  "homepage": "https://github.com/jiangshengdev/material-design-icons-vue-next#readme",
+  "bugs": {
+    "url": "https://github.com/jiangshengdev/material-design-icons-vue-next/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jiangshengdev/material-design-icons-vue-next.git"
+  },
+  "author": "Jiang Sheng <jiangshengdev@outlook.com>",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "alpha"
+  },
   "scripts": {
     "gulp:icon": "tsx ./node_modules/gulp/bin/gulp.js icon",
+    "build": "tsdown",
+    "dev": "tsdown --watch",
     "play": "vite",
     "play:build": "run-p type-check \"play:build-only {@}\" --",
     "preview": "vite preview",
@@ -18,7 +44,9 @@
     "lint:oxlint": "oxlint . --fix -D correctness --ignore-path .gitignore",
     "lint:eslint": "eslint . --fix --cache",
     "lint": "run-s lint:*",
-    "format": "prettier --write e2e/ playground/ scripts/ src/ tests/"
+    "format": "prettier --write e2e/ playground/ scripts/ src/ tests/",
+    "release": "bumpp && pnpm publish",
+    "prepublishOnly": "pnpm run build && pnpm run styles:build"
   },
   "dependencies": {
     "pinia": "^3.0.3",
@@ -62,6 +90,7 @@
     "npm-run-all2": "^8.0.4",
     "oxlint": "~1.23.0",
     "prettier": "3.6.2",
+    "tsdown": "^0.16.6",
     "through2": "^4.0.2",
     "tsx": "^4.20.6",
     "typescript": "~5.9.0",
