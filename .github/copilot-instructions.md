@@ -4,13 +4,13 @@
 
 ## 架构与源码布局
 
-- `src/index.ts` 只重新导出 `MDIcon` 与 `src/icons/**` 下的全部图标；这一目录是由 `build/tasks` 中的 Gulp 流水线基于上游 `material-design-icons` 生成的构建产物（一种图标对应一个 Vue 3 TSX 组件）。若需更改组件形态，请修改 `build/templates` 中的模板而非直接批量改动生成文件。
+- `src/index.ts` 只重新导出 `MDIcon` 与 `src/icons/**` 下的全部图标；这一目录是由 `scripts/tasks` 中的 Gulp 流水线基于本地 `material-design-icons-4.0.0/src` 目录生成的构建产物（每个图标对应一个支持多变体的 Vue 3 TSX 组件）。若需更改组件形态，请修改 `scripts/templates` 中的模板而非直接批量改动生成文件。
 - 所有 TSX 都依赖自定义的 `vueJsxCompat` 工厂（`src/vue-jsx-compat.ts`）以及轻量包装组件 `MDIcon`（`src/components/MDIcon.tsx`）。新增组件时务必保留 `vueJsxCompat` 引入并确保 `tsconfig.json` 的 `jsxFactory` 与之匹配。
 - `src/views/**/*` 下的演示界面同样通过生成流程得到；`IconPanes.tsx` 将 `src/views/icons` 导出的各分类列表拼接呈现，重新生成图标时可视为一次性产物。
 
 ## 构建与生成流程
 
-- 执行 `yarn gulp:icon` 会清理 `src/icons`/`src/views/icons`，将上游 SVG 转成 TSX 组件（`generate-icons`），并重建分类索引与演示面板（`generate-index`、`generate-demo`）。依赖 `material-design-icons` 提供的本地 SVG 路径。
+- 执行 `pnpm run gulp:icon` 会清理 `src/icons`/`playground/views/icons`，将本地 `material-design-icons-4.0.0/src` 目录中的 SVG 转成支持 5 种变体（filled、outlined、round、sharp、twotone）的 TSX 组件（`generate-icons`），并重建分类索引与演示面板（`generate-index`、`generate-demo`）。
 - `yarn gulp:style` 负责将 `src/index.css` 级联输出到 `dist/index.css`。`yarn gulp:lib` 会清空 `dist`/`temp`，串行运行 DTS 打包（`rollup-dts.ts`）、API Extractor（`api-extractor.ts` + `api-extractor.json`）以及通过 esbuild 生成的 ESM/CJS 包（`bundle-script.ts`）。`yarn build` 依次执行上述三个 gulp 任务。
 - 临时声明文件位于 `temp/`，仅供 API Extractor 使用，不要手工修改。
 
@@ -32,6 +32,6 @@
 
 ## 外部依赖与注意事项
 
-- `material-design-icons` 暴露磁盘路径（见 `typing.d.ts` 的模块扩展），除非重写依赖 `STATIC_PATH` 的生成逻辑，否则不要替换为 CDN 链接。
+- 图标源文件位于本地 `material-design-icons-4.0.0/src` 目录，不再依赖 npm 包 `material-design-icons`。
 - 类型定义依赖 `@microsoft/api-extractor`；新增导出时务必确保通过 `src/index.ts` 暴露，否则会在 `dist/index.d.ts` 中被丢弃。
 - 项目默认使用 Vue 3 运行时 JSX；若想在 `src/icons` 内换用 `<template>` SFC，需要同步调整构建脚本、esbuild 配置与 `tsconfig`。

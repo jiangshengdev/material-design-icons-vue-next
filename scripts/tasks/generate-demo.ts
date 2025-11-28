@@ -1,4 +1,4 @@
-import { format, iconCategories, svgSelector } from '../helpers'
+import { format, iconCategories } from '../helpers'
 import { dest, src } from 'gulp'
 import cancat from 'gulp-concat'
 import prettierFormat from '../plugins/prettier-format'
@@ -6,14 +6,17 @@ import { itemDefinition, listDefinition, listRename } from '../plugins/demo-defi
 import { indexTemplate, panesTemplate, paneTemplate } from '../templates/demo-template'
 import fs from 'fs'
 import path from 'path'
-import materialDesignIcons from 'material-design-icons'
+
+// 4.0 版本的本地源文件路径
+const ICONS_SOURCE_PATH = 'material-design-icons-4.0.0/src'
+
+// 4.0 版本的 SVG 路径模式: {icon_name}/materialicons/24px.svg (使用 filled 变体作为 demo)
+const DEMO_SVG_SELECTOR = '*/materialicons/24px.svg'
 
 async function list() {
-  const iconPath = materialDesignIcons.STATIC_PATH
-
   const processes = iconCategories.map((iconCategory) => {
     return new Promise((resolve) => {
-      const svgFullSelector = path.join(iconPath, iconCategory, svgSelector)
+      const svgFullSelector = path.join(ICONS_SOURCE_PATH, iconCategory, DEMO_SVG_SELECTOR)
 
       src(svgFullSelector)
         .pipe(itemDefinition(iconCategory))
@@ -37,10 +40,14 @@ async function index() {
     .join('\n')
     .concat('\n')
 
-  fs.writeFileSync(
-    path.join(__dirname, '../../playground/views/icons/index.ts'),
-    await format(indexContent),
-  )
+  // 确保目录存在
+  const iconsDir = path.join(__dirname, '../../playground/views/icons')
+
+  if (!fs.existsSync(iconsDir)) {
+    fs.mkdirSync(iconsDir, { recursive: true })
+  }
+
+  fs.writeFileSync(path.join(iconsDir, 'index.ts'), await format(indexContent))
 }
 
 async function panes() {
