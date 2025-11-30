@@ -1,6 +1,7 @@
 {
   "extends": "@tsconfig/node22/tsconfig.json",
   "include": [
+    "scripts/**/*",
     "vite.config.*",
     "vitest.config.*",
     "tsdown.config.*",
