@@ -12,8 +12,8 @@ import {
   getComponentName,
   DuplicateNameHandler,
   type IconVariant,
-} from '../scripts/helpers'
-import { getCssClassName } from '../scripts/templates/icon-template'
+} from '../../../scripts/helpers.ts'
+import { getCssClassName } from '../../../scripts/templates/icon-template.ts'
 
 // 有效的变体列表
 const validVariants: IconVariant[] = ['filled', 'outlined', 'round', 'sharp', 'twotone']
@@ -682,7 +682,7 @@ describe('Icon Generator Refactor 属性测试', () => {
  * Icon Generator Refactor - 生成文件结构属性测试
  * 直接测试 iconTemplate 函数的输出
  */
-import { iconTemplate } from '../scripts/templates/icon-template'
+import { iconTemplate } from '../../../scripts/templates/icon-template.ts'
 
 describe('Icon Generator Refactor 生成文件结构测试', () => {
   // SVG 内容生成器：生成有效的 SVG 字符串
@@ -969,7 +969,7 @@ import {
   createIconComponent,
   type IconDefinition,
   type SvgMap,
-} from '../src/components/createIconComponent'
+} from '../createIconComponent.tsx'
 import { h } from 'vue'
 
 describe('Icon Generator Refactor 渲染输出等价性测试', () => {
@@ -1137,8 +1137,8 @@ describe('Icon Generator Refactor 渲染输出等价性测试', () => {
  * Gulp to Node.js Refactor - Demo 生成属性测试
  * 验证 Demo 列表生成的正确性
  */
-import { itemTemplate, listTemplate } from '../scripts/templates/demo-template'
-import { getListName } from '../scripts/helpers'
+import { itemTemplate, listTemplate } from '../../../scripts/templates/demo-template.ts'
+import { getListName } from '../../../scripts/helpers.ts'
 
 describe('Gulp to Node.js Refactor Demo 生成测试', () => {
   /**

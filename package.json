@@ -44,7 +44,7 @@
     "lint:oxlint": "oxlint . --fix -D correctness --ignore-path .gitignore",
     "lint:eslint": "eslint . --fix --cache",
     "lint": "run-s lint:*",
-    "format": "prettier --write e2e/ playground/ scripts/ src/ tests/",
+    "format": "prettier --write e2e/ playground/ scripts/ src/",
     "release": "bumpp && pnpm publish",
     "prepublishOnly": "pnpm run icons && pnpm run build"
   },
