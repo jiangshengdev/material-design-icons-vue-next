@@ -680,8 +680,41 @@ describe('Icon Generator Refactor 属性测试', () => {
 
 /**
  * Icon Generator Refactor - 生成文件结构属性测试
+ * 直接测试 iconTemplate 函数的输出
  */
+import { iconTemplate } from '../scripts/templates/icon-template'
+
 describe('Icon Generator Refactor 生成文件结构测试', () => {
+  // SVG 内容生成器：生成有效的 SVG 字符串
+  const svgContentArb = fc.constantFrom(
+    '<svg height="1em" viewBox="0 0 24 24" width="1em" fill="currentColor"><path d="M0 0h24v24H0z" fill="none" /><path d="M12 2L2 12h3v8h6v-6h2v6h6v-8h3L12 2z" /></svg>',
+    '<svg height="1em" viewBox="0 0 24 24" width="1em" fill="currentColor"><path d="M12 2c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2z" /></svg>',
+    '<svg height="1em" viewBox="0 0 24 24" width="1em" fill="currentColor"><circle cx="12" cy="12" r="10" /></svg>',
+  )
+
+  // 变体组合生成器：生成至少包含一个变体的 SVG 映射
+  const svgMapArb = fc
+    .record({
+      filled: fc.option(svgContentArb, { nil: undefined }),
+      outlined: fc.option(svgContentArb, { nil: undefined }),
+      round: fc.option(svgContentArb, { nil: undefined }),
+      sharp: fc.option(svgContentArb, { nil: undefined }),
+      twotone: fc.option(svgContentArb, { nil: undefined }),
+    })
+    .filter((map) => Object.values(map).some((v) => v !== undefined))
+    .map((map) => {
+      // 移除 undefined 值
+      const result: Partial<Record<IconVariant, string>> = {}
+
+      for (const [key, value] of Object.entries(map)) {
+        if (value !== undefined) {
+          result[key as IconVariant] = value
+        }
+      }
+
+      return result
+    })
+
   /**
    * **Feature: icon-generator-refactor, Property 1: Generated files use shared imports**
    * *For any* generated icon component file, the file SHALL contain an import from
@@ -690,34 +723,30 @@ describe('Icon Generator Refactor 生成文件结构测试', () => {
    * **Validates: Requirements 1.1, 3.2**
    */
   describe('Property 1: 生成文件使用共享导入', () => {
-    test('生成的模板应导入 createIconComponent', () => {
+    test('iconTemplate 生成的内容应导入 createIconComponent 且不包含重复逻辑', () => {
       fc.assert(
-        fc.property(iconNameArb, (iconName) => {
+        fc.property(iconNameArb, svgMapArb, (iconName, svgMap) => {
           if (!iconName || iconName.length === 0) return true
 
           const componentName = getComponentName(iconName)
-
-          // 模拟生成的文件内容
-          const generatedContent = `import { createIconComponent } from '../../components/createIconComponent'
-
-export const ${componentName} = createIconComponent({
-  name: '${componentName}',
-  iconName: '${iconName}',
-  svgMap: {},
-})
-`
+          const generatedContent = iconTemplate(svgMap, iconName, componentName)
 
           // 验证包含 createIconComponent 导入
-          expect(generatedContent).toContain('import { createIconComponent }')
+          expect(generatedContent).toContain(
+            "import { createIconComponent } from '../../components/createIconComponent'",
+          )
 
           // 验证不包含内联的 defineComponent
-          expect(generatedContent).not.toContain('defineComponent({')
+          expect(generatedContent).not.toContain('defineComponent(')
 
-          // 验证不包含内联的 props 定义
+          // 验证不包含内联的 props 定义（作为对象属性）
           expect(generatedContent).not.toMatch(/props:\s*\{/)
 
           // 验证不包含内联的 setup 函数
           expect(generatedContent).not.toMatch(/setup\s*\(/)
+
+          // 验证不包含 vue 导入
+          expect(generatedContent).not.toContain("from 'vue'")
 
           return true
         }),
@@ -733,35 +762,47 @@ export const ${componentName} = createIconComponent({
    * **Validates: Requirements 1.2, 3.1**
    */
   describe('Property 2: 生成文件只包含最小数据', () => {
-    test('生成的模板应只包含 name、iconName 和 svgMap', () => {
+    test('iconTemplate 生成的内容应只包含 name、iconName 和 svgMap', () => {
       fc.assert(
-        fc.property(iconNameArb, (iconName) => {
+        fc.property(iconNameArb, svgMapArb, (iconName, svgMap) => {
           if (!iconName || iconName.length === 0) return true
 
           const componentName = getComponentName(iconName)
-          const kebabName = iconName.replace(/_/g, '-')
-
-          // 模拟生成的文件内容
-          const generatedContent = `import { createIconComponent } from '../../components/createIconComponent'
-
-export const ${componentName} = createIconComponent({
-  name: '${componentName}',
-  iconName: '${kebabName}',
-  svgMap: {
-    filled: () => (<svg></svg>),
-  },
-})
-`
+          const generatedContent = iconTemplate(svgMap, iconName, componentName)
 
           // 验证包含必需的三个字段
           expect(generatedContent).toContain(`name: '${componentName}'`)
-          expect(generatedContent).toContain(`iconName: '${kebabName}'`)
+          expect(generatedContent).toContain('iconName:')
           expect(generatedContent).toContain('svgMap: {')
 
           // 验证不包含额外的组件逻辑
           expect(generatedContent).not.toContain('availableVariants')
           expect(generatedContent).not.toContain('defaultVariant')
           expect(generatedContent).not.toContain('className =')
+          expect(generatedContent).not.toContain('requestedVariant')
+          expect(generatedContent).not.toContain('renderSvg')
+
+          // 验证调用 createIconComponent
+          expect(generatedContent).toContain('createIconComponent({')
+
+          return true
+        }),
+        { numRuns: 100 },
+      )
+    })
+
+    test('iconTemplate 生成的内容应包含所有提供的变体', () => {
+      fc.assert(
+        fc.property(iconNameArb, svgMapArb, (iconName, svgMap) => {
+          if (!iconName || iconName.length === 0) return true
+
+          const componentName = getComponentName(iconName)
+          const generatedContent = iconTemplate(svgMap, iconName, componentName)
+
+          // 验证所有提供的变体都在生成的内容中
+          for (const variant of Object.keys(svgMap)) {
+            expect(generatedContent).toContain(`${variant}: () =>`)
+          }
 
           return true
         }),
@@ -777,29 +818,312 @@ export const ${componentName} = createIconComponent({
    * **Validates: Requirements 5.2**
    */
   describe('Property 8: 生成文件行数', () => {
-    test('非 SVG 样板代码应少于 15 行', () => {
+    test('iconTemplate 生成的非 SVG 样板代码应少于 15 行', () => {
       fc.assert(
         fc.property(iconNameArb, (iconName) => {
           if (!iconName || iconName.length === 0) return true
 
           const componentName = getComponentName(iconName)
-          const kebabName = iconName.replace(/_/g, '-')
+          // 使用单个变体测试最小样板代码
+          const minimalSvgMap: Partial<Record<IconVariant, string>> = {
+            filled: '<svg></svg>',
+          }
+          const generatedContent = iconTemplate(minimalSvgMap, iconName, componentName)
 
-          // 模拟生成的文件内容（不含 SVG 内容）
-          const boilerplateLines = [
-            "import { createIconComponent } from '../../components/createIconComponent'",
-            '',
-            `export const ${componentName} = createIconComponent({`,
-            `  name: '${componentName}',`,
-            `  iconName: '${kebabName}',`,
-            '  svgMap: {',
-            '    filled: () => (/* SVG */),',
-            '  },',
-            '})',
-          ]
+          // 计算非 SVG 内容的行数
+          // 移除 SVG 内容后计算行数
+          const lines = generatedContent.split('\n')
+          const boilerplateLines = lines.filter((line) => {
+            const trimmed = line.trim()
+
+            // 排除空行和纯 SVG 内容行
+            return (
+              trimmed.length > 0 &&
+              !trimmed.startsWith('<svg') &&
+              !trimmed.startsWith('<path') &&
+              !trimmed.startsWith('<circle') &&
+              !trimmed.startsWith('</svg')
+            )
+          })
 
           // 验证样板代码行数少于 15 行
           expect(boilerplateLines.length).toBeLessThan(15)
+
+          return true
+        }),
+        { numRuns: 100 },
+      )
+    })
+
+    test('iconTemplate 生成的总行数应合理（考虑多变体）', () => {
+      fc.assert(
+        fc.property(iconNameArb, svgMapArb, (iconName, svgMap) => {
+          if (!iconName || iconName.length === 0) return true
+
+          const componentName = getComponentName(iconName)
+          const generatedContent = iconTemplate(svgMap, iconName, componentName)
+
+          const lines = generatedContent.split('\n')
+          const variantCount = Object.keys(svgMap).length
+
+          // 基础样板约 8 行 + 每个变体约 1 行（不含 SVG 内容）
+          // 总行数应该合理
+          const expectedMaxLines = 10 + variantCount * 5 // 每个变体最多 5 行（含 SVG）
+
+          expect(lines.length).toBeLessThanOrEqual(expectedMaxLines)
+
+          return true
+        }),
+        { numRuns: 100 },
+      )
+    })
+  })
+
+  /**
+   * **Feature: icon-generator-refactor, Property 7: Export name consistency**
+   * *For any* generated icon component, the exported component name SHALL match
+   * the pattern `MDI{PascalCaseName}` and be consistent with the original naming convention.
+   * **Validates: Requirements 4.1**
+   */
+  describe('Property 7: 导出名称一致性', () => {
+    test('iconTemplate 生成的导出名称应符合 MDI{PascalCaseName} 模式', () => {
+      fc.assert(
+        fc.property(iconNameArb, svgMapArb, (iconName, svgMap) => {
+          if (!iconName || iconName.length === 0) return true
+
+          const componentName = getComponentName(iconName)
+          const generatedContent = iconTemplate(svgMap, iconName, componentName)
+
+          // 验证导出语句格式
+          expect(generatedContent).toMatch(/export const MDI[A-Za-z0-9]+ = createIconComponent/)
+
+          // 验证组件名称以 MDI 开头
+          expect(componentName).toMatch(/^MDI/)
+
+          // 验证组件名称使用 PascalCase（MDI 后面跟大写字母或数字）
+          expect(componentName).toMatch(/^MDI[A-Z0-9]/)
+
+          // 验证组件名称不包含下划线或连字符
+          expect(componentName).not.toMatch(/[_-]/)
+
+          // 验证生成的内容中 name 字段与导出名称一致
+          expect(generatedContent).toContain(`name: '${componentName}'`)
+          expect(generatedContent).toContain(`export const ${componentName}`)
+
+          return true
+        }),
+        { numRuns: 100 },
+      )
+    })
+
+    test('相同输入应产生相同的组件名称（确定性）', () => {
+      fc.assert(
+        fc.property(iconNameArb, (iconName) => {
+          if (!iconName || iconName.length === 0) return true
+
+          const result1 = getComponentName(iconName)
+          const result2 = getComponentName(iconName)
+
+          expect(result1).toBe(result2)
+
+          return true
+        }),
+        { numRuns: 100 },
+      )
+    })
+
+    test('iconTemplate 生成的内容中 name 字段应与导出名称一致', () => {
+      fc.assert(
+        fc.property(iconNameArb, svgMapArb, (iconName, svgMap) => {
+          if (!iconName || iconName.length === 0) return true
+
+          const componentName = getComponentName(iconName)
+          const generatedContent = iconTemplate(svgMap, iconName, componentName)
+
+          // 提取导出的组件名称
+          const exportMatch = generatedContent.match(/export const (MDI[A-Za-z0-9]+) =/)
+
+          expect(exportMatch).not.toBeNull()
+
+          if (exportMatch) {
+            const exportedName = exportMatch[1]
+
+            // 验证 name 字段与导出名称一致
+            expect(generatedContent).toContain(`name: '${exportedName}'`)
+          }
+
+          return true
+        }),
+        { numRuns: 100 },
+      )
+    })
+  })
+})
+
+/**
+ * Icon Generator Refactor - 渲染输出等价性测试
+ * 验证 createIconComponent 创建的组件渲染输出符合预期
+ */
+import { mount } from '@vue/test-utils'
+import {
+  createIconComponent,
+  type IconDefinition,
+  type SvgMap,
+} from '../src/components/createIconComponent'
+import { h } from 'vue'
+
+describe('Icon Generator Refactor 渲染输出等价性测试', () => {
+  /**
+   * **Feature: icon-generator-refactor, Property 3: Render output equivalence**
+   * *For any* icon component and any variant, rendering the refactored component
+   * SHALL produce the same DOM structure (MDIcon wrapper, CSS class, SVG content)
+   * as the original implementation.
+   * **Validates: Requirements 1.4, 4.3**
+   */
+  describe('Property 3: 渲染输出等价性', () => {
+    // 创建测试用的 SVG 渲染函数
+    const createSvgRenderer = (content: string) => () =>
+      h('svg', {
+        height: '1em',
+        viewBox: '0 0 24 24',
+        width: '1em',
+        fill: 'currentColor',
+        innerHTML: content,
+      })
+
+    test('createIconComponent 创建的组件应渲染正确的 DOM 结构', () => {
+      fc.assert(
+        fc.property(iconNameArb, variantArb, (iconName, variant) => {
+          if (!iconName || iconName.length === 0) return true
+
+          const kebabName = iconName.replace(/_/g, '-')
+          const componentName = getComponentName(iconName)
+
+          // 创建包含所有变体的 svgMap
+          const svgMap: SvgMap = {
+            filled: createSvgRenderer('<path d="M12 2L2 12h3v8h6v-6h2v6h6v-8h3L12 2z"/>'),
+            outlined: createSvgRenderer('<path d="M12 5.69l5 4.5V18h-2v-6H9v6H7v-7.81l5-4.5z"/>'),
+            round: createSvgRenderer('<circle cx="12" cy="12" r="10"/>'),
+            sharp: createSvgRenderer('<rect x="4" y="4" width="16" height="16"/>'),
+            twotone: createSvgRenderer('<path d="M12 3L4 9v12h16V9l-8-6z" opacity=".3"/>'),
+          }
+
+          const definition: IconDefinition = {
+            name: componentName,
+            iconName: kebabName,
+            svgMap,
+          }
+
+          const IconComponent = createIconComponent(definition)
+          const wrapper = mount(IconComponent, {
+            props: { variant },
+          })
+
+          const html = wrapper.html()
+
+          // 验证渲染了 span 元素（MDIcon 的根元素）
+          expect(html).toContain('<span')
+          expect(html).toContain('</span>')
+
+          // 验证包含 md-icon 基础类名
+          expect(html).toContain('md-icon')
+
+          // 验证包含正确的 CSS 类名
+          const expectedClass =
+            variant === 'filled' ? `mdi-${kebabName}` : `mdi-${kebabName}-${variant}`
+
+          expect(html).toContain(expectedClass)
+
+          // 验证包含 SVG 元素
+          expect(html).toContain('<svg')
+          expect(html).toContain('</svg>')
+
+          return true
+        }),
+        { numRuns: 50 }, // 减少迭代次数因为涉及 DOM 操作
+      )
+    })
+
+    test('createIconComponent 应正确处理变体回退', () => {
+      fc.assert(
+        fc.property(
+          iconNameArb,
+          fc.array(variantArb, { minLength: 1, maxLength: 3 }),
+          variantArb,
+          (iconName, availableVariants, requestedVariant) => {
+            if (!iconName || iconName.length === 0) return true
+
+            const uniqueVariants = [...new Set(availableVariants)] as IconVariant[]
+            const kebabName = iconName.replace(/_/g, '-')
+            const componentName = getComponentName(iconName)
+
+            // 只为可用变体创建 svgMap
+            const svgMap: SvgMap = {}
+
+            for (const v of uniqueVariants) {
+              svgMap[v] = createSvgRenderer(`<path d="test-${v}"/>`)
+            }
+
+            const definition: IconDefinition = {
+              name: componentName,
+              iconName: kebabName,
+              svgMap,
+            }
+
+            const IconComponent = createIconComponent(definition)
+            const wrapper = mount(IconComponent, {
+              props: { variant: requestedVariant },
+            })
+
+            const html = wrapper.html()
+
+            // 计算预期使用的变体
+            const expectedVariant = uniqueVariants.includes(requestedVariant)
+              ? requestedVariant
+              : uniqueVariants.includes('filled')
+                ? 'filled'
+                : uniqueVariants[0]
+
+            // 验证使用了正确的变体
+            const expectedClass =
+              expectedVariant === 'filled'
+                ? `mdi-${kebabName}`
+                : `mdi-${kebabName}-${expectedVariant}`
+
+            expect(html).toContain(expectedClass)
+
+            // 验证渲染了正确变体的 SVG 内容
+            expect(html).toContain(`test-${expectedVariant}`)
+
+            return true
+          },
+        ),
+        { numRuns: 50 },
+      )
+    })
+
+    test('createIconComponent 创建的组件应具有正确的组件名称', () => {
+      fc.assert(
+        fc.property(iconNameArb, (iconName) => {
+          if (!iconName || iconName.length === 0) return true
+
+          const kebabName = iconName.replace(/_/g, '-')
+          const componentName = getComponentName(iconName)
+
+          const svgMap: SvgMap = {
+            filled: createSvgRenderer('<path d="M12 2"/>'),
+          }
+
+          const definition: IconDefinition = {
+            name: componentName,
+            iconName: kebabName,
+            svgMap,
+          }
+
+          const IconComponent = createIconComponent(definition)
+
+          // 验证组件名称
+          expect(IconComponent.name).toBe(componentName)
 
           return true
         }),

@@ -21,11 +21,11 @@
     - Generate `createIconComponent` call with `name`, `iconName`, and `svgMap`
     - Remove inline type definitions and component logic
     - _Requirements: 1.2, 3.1, 3.2_
-  - [ ]* 2.2 Write property test for generated file structure (Property 1 & 2)
+  - [x]* 2.2 Write property test for generated file structure (Property 1 & 2)
     - **Property 1: Generated files use shared imports without duplicated logic**
     - **Property 2: Generated files contain only minimal icon-specific data**
     - **Validates: Requirements 1.1, 1.2, 3.1, 3.2**
-  - [ ]* 2.3 Write property test for generated file line count (Property 8)
+  - [x]* 2.3 Write property test for generated file line count (Property 8)
     - **Property 8: Generated file line count**
     - **Validates: Requirements 5.2**
 
@@ -33,7 +33,7 @@
   - [x] 3.1 Update `src/components/index.ts` to export `createIconComponent` and related types
     - Export `IconVariant`, `SvgMap`, `IconDefinition`, and `createIconComponent`
     - _Requirements: 4.1, 4.2_
-  - [ ]* 3.2 Write property test for export name consistency (Property 7)
+  - [x]* 3.2 Write property test for export name consistency (Property 7)
     - **Property 7: Export name consistency**
     - **Validates: Requirements 4.1**
 
@@ -42,7 +42,7 @@
     - Execute `pnpm generate:icons` or equivalent command
     - Verify all icons are generated successfully
     - _Requirements: 1.1, 1.2, 3.1_
-  - [ ]* 4.2 Write property test for render output equivalence (Property 3)
+  - [x]* 4.2 Write property test for render output equivalence (Property 3)
     - **Property 3: Render output equivalence**
     - **Validates: Requirements 1.4, 4.3**
 
@@ -55,5 +55,5 @@
     - Verify at least 50% reduction in code size
     - _Requirements: 5.1_
 
-- [ ] 7. Final Checkpoint - Ensure all tests pass
+- [x] 7. Final Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
