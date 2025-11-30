@@ -1,5 +1,5 @@
 import { pascalCase, upperFirst } from 'scule'
-import prettier, { Options } from 'prettier'
+import prettier, { type Options } from 'prettier'
 import path from 'path'
 import fs from 'fs'
 import { fileURLToPath } from 'url'
@@ -190,7 +190,7 @@ export async function transformExportsToIndividual(filePath: string): Promise<vo
     return
   }
 
-  const exportsContent = exportBlockMatch[1]
+  const exportsContent = exportBlockMatch[1]!
 
   // 将导出项分割成单独的名称
   // 注意：这假设导出项都是简单的标识符，没有 'as' 别名或复杂模式

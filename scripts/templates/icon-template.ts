@@ -1,4 +1,4 @@
-import { getClassName, IconVariant } from '../helpers'
+import { getClassName, type IconVariant } from '../helpers'
 
 /**
  * 生成 CSS 类名

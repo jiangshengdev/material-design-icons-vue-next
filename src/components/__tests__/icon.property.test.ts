@@ -365,9 +365,9 @@ describe('Material Icons v4 属性测试', () => {
       ]
 
       for (const availableVariants of partialVariantSets) {
-        const defaultVariant = availableVariants.includes('filled')
+        const defaultVariant: IconVariant = availableVariants.includes('filled')
           ? 'filled'
-          : availableVariants[0]
+          : availableVariants[0]!
 
         const selectVariant = (requested: IconVariant): IconVariant => {
           if (availableVariants.includes(requested)) {
@@ -397,8 +397,10 @@ describe('Material Icons v4 属性测试', () => {
           variantArb,
           (availableVariants, requestedVariant) => {
             // 确保数组唯一
-            const uniqueVariants = [...new Set(availableVariants)]
-            const defaultVariant = uniqueVariants.includes('filled') ? 'filled' : uniqueVariants[0]
+            const uniqueVariants = [...new Set(availableVariants)] as IconVariant[]
+            const defaultVariant: IconVariant = uniqueVariants.includes('filled')
+              ? 'filled'
+              : uniqueVariants[0]!
 
             const selectVariant = (requested: IconVariant): IconVariant => {
               if (uniqueVariants.includes(requested)) {
@@ -594,7 +596,9 @@ describe('Icon Generator Refactor 属性测试', () => {
             const uniqueVariants = [...new Set(availableVariants)] as IconVariant[]
 
             // 计算默认变体：filled 优先，否则第一个
-            const defaultVariant = uniqueVariants.includes('filled') ? 'filled' : uniqueVariants[0]
+            const defaultVariant: IconVariant = uniqueVariants.includes('filled')
+              ? 'filled'
+              : uniqueVariants[0]!
 
             // 模拟 createIconComponent 的变体选择逻辑
             const selectVariant = (requested: IconVariant): IconVariant => {
@@ -965,11 +969,7 @@ describe('Icon Generator Refactor 生成文件结构测试', () => {
  * 验证 createIconComponent 创建的组件渲染输出符合预期
  */
 import { mount } from '@vue/test-utils'
-import {
-  createIconComponent,
-  type IconDefinition,
-  type SvgMap,
-} from '../createIconComponent.tsx'
+import { createIconComponent, type IconDefinition, type SvgMap } from '@/components'
 import { h } from 'vue'
 
 describe('Icon Generator Refactor 渲染输出等价性测试', () => {
