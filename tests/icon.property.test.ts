@@ -1132,3 +1132,113 @@ describe('Icon Generator Refactor 渲染输出等价性测试', () => {
     })
   })
 })
+
+/**
+ * Gulp to Node.js Refactor - Demo 生成属性测试
+ * 验证 Demo 列表生成的正确性
+ */
+import { itemTemplate, listTemplate } from '../scripts/templates/demo-template'
+import { getListName } from '../scripts/helpers'
+
+describe('Gulp to Node.js Refactor Demo 生成测试', () => {
+  /**
+   * **Feature: gulp-to-nodejs-refactor, Property 6: Demo List Generation**
+   * *For any* category with icons, the generated demo list component SHALL reference
+   * all icons in that category using the correct component names.
+   * **Validates: Requirements 5.1, 5.3**
+   */
+  describe('Property 6: Demo 列表生成', () => {
+    test('itemTemplate 应生成正确的列表项', () => {
+      fc.assert(
+        fc.property(categoryArb, iconNameArb, (category, iconName) => {
+          if (!iconName || iconName.length === 0) return true
+
+          const item = itemTemplate(category, iconName)
+
+          // 验证包含 li 元素
+          expect(item).toContain('<li>')
+          expect(item).toContain('</li>')
+
+          // 验证包含组件引用
+          const componentName = getComponentName(iconName)
+
+          expect(item).toContain(`MDI.${componentName}`)
+
+          // 验证包含 variant prop
+          expect(item).toContain('variant={props.variant}')
+
+          // 验证包含图标名称显示
+          expect(item).toContain('icon-name')
+
+          return true
+        }),
+        { numRuns: 100 },
+      )
+    })
+
+    test('listTemplate 应生成正确的列表组件', () => {
+      fc.assert(
+        fc.property(categoryArb, (category) => {
+          const items = '<li>test item</li>'
+          const listContent = listTemplate(category, items)
+
+          // 验证包含 defineComponent
+          expect(listContent).toContain('defineComponent')
+
+          // 验证包含正确的组件名称
+          const listName = getListName(category)
+
+          expect(listContent).toContain(`name: '${listName}'`)
+
+          // 验证包含 variant prop 定义
+          expect(listContent).toContain('variant:')
+          expect(listContent).toContain('type: String as PropType<IconVariant>')
+          expect(listContent).toContain("default: 'filled'")
+
+          // 验证包含 MDI 导入
+          expect(listContent).toContain("import * as MDI from '@/index'")
+
+          // 验证包含 IconVariant 类型导入
+          expect(listContent).toContain("import type { IconVariant } from '@/index'")
+
+          // 验证包含传入的 items
+          expect(listContent).toContain(items)
+
+          return true
+        }),
+        { numRuns: 100 },
+      )
+    })
+
+    test('getListName 应生成正确的列表组件名称', () => {
+      fc.assert(
+        fc.property(categoryArb, (category) => {
+          const listName = getListName(category)
+
+          // 验证以 List 开头
+          expect(listName).toMatch(/^List/)
+
+          // 验证首字母大写
+          expect(listName).toMatch(/^List[A-Z]/)
+
+          return true
+        }),
+        { numRuns: 100 },
+      )
+    })
+
+    test('相同分类应产生相同的列表名称（确定性）', () => {
+      fc.assert(
+        fc.property(categoryArb, (category) => {
+          const result1 = getListName(category)
+          const result2 = getListName(category)
+
+          expect(result1).toBe(result2)
+
+          return true
+        }),
+        { numRuns: 100 },
+      )
+    })
+  })
+})

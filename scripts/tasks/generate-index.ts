@@ -1,36 +1,39 @@
 import path from 'path'
 import fs from 'fs'
+import { fileURLToPath } from 'url'
+import { glob } from 'tinyglobby'
+import consola from 'consola'
 import { format, iconCategories } from '../helpers'
 import { categoriesIndexTemplate, categoryIndexTemplate } from '../templates/index-template'
 
 const fsPromises = fs.promises
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 /**
  * 扫描分类目录下的所有组件文件，提取组件名称
+ * 使用 tinyglobby 进行文件扫描
  * @param categoryPath 分类目录路径
  * @returns 组件名称列表
  */
 async function scanCategoryComponents(categoryPath: string): Promise<string[]> {
-  const componentNames: string[] = []
-
   try {
-    const files = await fsPromises.readdir(categoryPath)
+    // 使用 glob 扫描 .tsx 文件，排除 index.tsx
+    const files = await glob('*.tsx', {
+      cwd: categoryPath,
+      ignore: ['index.tsx'],
+    })
 
-    for (const file of files) {
-      // 只处理 .tsx 文件，排除 index.ts
-      if (file.endsWith('.tsx') && file !== 'index.tsx') {
-        // 从文件名提取组件名称（去掉 .tsx 后缀）
-        const componentName = file.replace('.tsx', '')
+    // 从文件名提取组件名称（去掉 .tsx 后缀）
+    const componentNames = files.map((file) => file.replace('.tsx', ''))
 
-        componentNames.push(componentName)
-      }
-    }
+    // 按字母顺序排序
+    return componentNames.sort()
   } catch (error) {
-    console.warn(`Warning: Could not read category directory: ${categoryPath}`, error)
-  }
+    consola.warn(`无法读取分类目录: ${categoryPath}`, error)
 
-  // 按字母顺序排序
-  return componentNames.sort()
+    return []
+  }
 }
 
 /**
@@ -45,13 +48,12 @@ async function generateCategoryIndexFiles() {
     const componentNames = await scanCategoryComponents(categoryPath)
 
     if (componentNames.length === 0) {
-      console.warn(`Warning: No components found in category: ${category}`)
+      consola.warn(`分类 ${category} 中没有找到组件`)
 
       return
     }
 
     // 生成索引文件内容：只导出组件
-    // 注意：IconVariant 类型现在从 src/components/createIconComponent 导出
     const componentExports = componentNames.map((name) => categoryIndexTemplate(name)).join('\n')
 
     const indexContent = componentExports
@@ -62,7 +64,7 @@ async function generateCategoryIndexFiles() {
 
     await fsPromises.writeFile(indexPath, formattedContent)
 
-    console.log(`Generated index for ${category}: ${componentNames.length} components`)
+    consola.info(`生成索引 (${category}): ${componentNames.length} 个组件`)
   })
 
   await Promise.all(processes)
@@ -71,7 +73,6 @@ async function generateCategoryIndexFiles() {
 /**
  * 生成根索引文件
  * 在 src/icons/index.ts 中重新导出所有分类模块
- * 注意：IconVariant 类型现在从 src/components/createIconComponent 导出
  */
 async function generateRootIndexFile() {
   // 生成分类导出语句
@@ -87,7 +88,7 @@ async function generateRootIndexFile() {
 
   await fsPromises.writeFile(indexPath, formattedContent)
 
-  console.log(`Generated root index: ${iconCategories.length} categories`)
+  consola.info(`生成根索引: ${iconCategories.length} 个分类`)
 }
 
 /**
@@ -96,7 +97,7 @@ async function generateRootIndexFile() {
  * 2. 生成根 src/icons/index.ts
  */
 export default async function generateIndex() {
-  console.log('Generating index files...')
+  consola.info('生成索引文件...')
 
   // 先生成分类索引
   await generateCategoryIndexFiles()
@@ -104,5 +105,5 @@ export default async function generateIndex() {
   // 再生成根索引
   await generateRootIndexFile()
 
-  console.log('Index generation complete!')
+  consola.success('索引生成完成!')
 }

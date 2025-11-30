@@ -1,5 +1,5 @@
 import { getComponentName, getDisplayName, getListName } from '../helpers'
-import { upperFirst } from 'lodash-es'
+import { upperFirst } from 'scule'
 
 export function itemTemplate(_category: string, fileName: string) {
   const componentName = getComponentName(fileName)

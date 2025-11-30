@@ -1,8 +1,10 @@
 import path from 'path'
 import fs from 'fs'
-import { dest, src } from 'gulp'
-import { iconDefinition, iconRename } from '../plugins/icon-definition'
-import prettierFormat from '../plugins/prettier-format'
+import pMap from 'p-map'
+import consola from 'consola'
+import { iconTemplate } from '../templates/icon-template'
+import { readAndConvertSvg } from '../utils/svg-converter'
+import { format } from '../helpers'
 import {
   iconCategories,
   VARIANT_DIR_MAP,
@@ -68,7 +70,7 @@ async function scanCategory(category: string): Promise<IconInfo[]> {
       }
     }
   } catch (error) {
-    console.warn(`Warning: Could not scan category "${category}":`, error)
+    consola.warn(`无法扫描分类 "${category}":`, error)
   }
 
   return icons
@@ -85,84 +87,78 @@ async function scanAllIcons(): Promise<Map<string, IconInfo[]>> {
     const icons = await scanCategory(category)
 
     allIcons.set(category, icons)
-    console.log(`Scanned ${icons.length} icons in category "${category}"`)
+    consola.info(`扫描到 ${icons.length} 个图标 (${category})`)
   }
 
   return allIcons
 }
 
 /**
- * 读取 SVG 文件内容
- * @param filePath SVG 文件路径
- * @returns SVG 内容或 null（如果读取失败）
+ * 收集图标的所有变体 SVG 内容
  */
-async function readSVGContent(filePath: string): Promise<string | null> {
-  try {
-    const content = await fsPromises.readFile(filePath, 'utf-8')
+async function collectVariantSVGs(
+  iconInfo: IconInfo,
+): Promise<Partial<Record<IconVariant, string>>> {
+  const svgContents: Partial<Record<IconVariant, string>> = {}
 
-    if (!content || content.trim().length === 0) {
-      console.warn(`Warning: Empty SVG file: ${filePath}`)
+  for (const [variant, svgPath] of Object.entries(iconInfo.variants)) {
+    const content = await readAndConvertSvg(svgPath as string)
 
-      return null
+    if (content) {
+      svgContents[variant as IconVariant] = content
     }
-
-    return content
-  } catch (error) {
-    console.warn(`Warning: Could not read SVG file "${filePath}":`, error)
-
-    return null
   }
+
+  return svgContents
 }
 
 /**
  * 为单个图标生成组件
- * 使用 Gulp 流处理 SVG 转换和格式化
+ * 使用纯 async/await 实现
  */
-function generateIconComponent(
+async function generateIconComponent(
   iconInfo: IconInfo,
   duplicateHandler: DuplicateNameHandler,
 ): Promise<void> {
-  return new Promise((resolve) => {
-    // 获取 filled 变体的路径作为主要源文件
-    // 如果没有 filled 变体，使用第一个可用的变体
-    const variants = Object.keys(iconInfo.variants) as IconVariant[]
-    const primaryVariant = variants.includes('filled') ? 'filled' : variants[0]
-    const primaryPath = iconInfo.variants[primaryVariant]!
+  // 处理重名
+  const originalComponentName = getComponentName(iconInfo.name)
+  const finalComponentName = duplicateHandler.handleDuplicateName(
+    originalComponentName,
+    iconInfo.category,
+  )
 
-    // 处理重名
-    const originalComponentName = getComponentName(iconInfo.name)
-    const finalComponentName = duplicateHandler.handleDuplicateName(
-      originalComponentName,
-      iconInfo.category,
-    )
+  // 收集所有变体的 SVG 内容
+  const svgContents = await collectVariantSVGs(iconInfo)
 
-    // 使用 Gulp 流处理
-    src(primaryPath)
-      .pipe(
-        iconDefinition({
-          iconInfo,
-          componentName: finalComponentName,
-        }),
-      )
-      .pipe(iconRename(finalComponentName))
-      .pipe(prettierFormat())
-      .pipe(dest(`src/icons/${iconInfo.category}`))
-      .on('end', () => {
-        resolve()
-      })
-      .on('error', (error: Error) => {
-        console.error(`Error generating icon ${iconInfo.name}:`, error)
-        resolve()
-      })
-  })
+  if (Object.keys(svgContents).length === 0) {
+    consola.warn(`图标 "${iconInfo.name}" 没有有效的 SVG 内容`)
+
+    return
+  }
+
+  // 生成 Vue 组件
+  const vueComponent = iconTemplate(svgContents, iconInfo.name, finalComponentName)
+
+  // 格式化代码
+  const formattedCode = await format(vueComponent)
+
+  // 确保目标目录存在
+  const outputDir = `src/icons/${iconInfo.category}`
+
+  await fsPromises.mkdir(outputDir, { recursive: true })
+
+  // 写入文件
+  const outputPath = path.join(outputDir, `${finalComponentName}.tsx`)
+
+  await fsPromises.writeFile(outputPath, formattedCode, 'utf-8')
 }
 
 /**
  * 主函数：生成所有图标组件
  */
 export default async function generateIcons(): Promise<void> {
-  console.log('Starting icon generation from Material Design Icons 4.0...')
-  console.log(`Source path: ${ICONS_SOURCE_PATH}`)
+  consola.info('开始生成图标组件 (Material Design Icons 4.0)...')
+  consola.info(`源路径: ${ICONS_SOURCE_PATH}`)
 
   // 扫描所有图标
   const allIcons = await scanAllIcons()
@@ -170,28 +166,32 @@ export default async function generateIcons(): Promise<void> {
   // 创建重名处理器
   const duplicateHandler = new DuplicateNameHandler()
 
-  // 按分类生成图标
+  // 按分类生成图标，使用 p-map 控制并发
   for (const [category, icons] of allIcons) {
-    console.log(`Generating ${icons.length} icons for category "${category}"...`)
+    consola.info(`生成 ${icons.length} 个图标 (${category})...`)
 
-    for (const iconInfo of icons) {
-      await generateIconComponent(iconInfo, duplicateHandler)
-    }
+    await pMap(
+      icons,
+      async (iconInfo) => {
+        await generateIconComponent(iconInfo, duplicateHandler)
+      },
+      { concurrency: 10 },
+    )
   }
 
   // 输出重名统计
   const duplicateLog = duplicateHandler.getDuplicateLog()
 
   if (duplicateLog.size > 0) {
-    console.log('\nDuplicate icon names detected:')
+    consola.info('\n检测到重名图标:')
 
     for (const [originalName, renamedList] of duplicateLog) {
-      console.log(`  ${originalName}: ${renamedList.join(', ')}`)
+      consola.info(`  ${originalName}: ${renamedList.join(', ')}`)
     }
   }
 
-  console.log('\nIcon generation complete!')
+  consola.success('图标生成完成!')
 }
 
 // 导出扫描函数供测试使用
-export { scanCategory, scanAllIcons, readSVGContent, ICONS_SOURCE_PATH }
+export { scanCategory, scanAllIcons, ICONS_SOURCE_PATH }

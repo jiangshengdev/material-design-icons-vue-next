@@ -1,9 +1,12 @@
-import { camelCase, upperFirst } from 'lodash-es'
+import { pascalCase, upperFirst } from 'scule'
 import prettier, { Options } from 'prettier'
 import path from 'path'
 import fs from 'fs'
+import { fileURLToPath } from 'url'
 
 const fsPromises = fs.promises
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 const prettierConfigPath = '../.prettierrc.json'
 
 // 图标变体类型定义
@@ -64,7 +67,7 @@ function nameNormalize(name: string) {
 }
 
 export function getComponentName(name: string) {
-  return 'MDI' + upperFirst(camelCase(nameNormalize(name)))
+  return 'MDI' + pascalCase(nameNormalize(name))
 }
 
 export function getClassName(name: string) {
