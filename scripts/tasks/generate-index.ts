@@ -1,11 +1,7 @@
 import path from 'path'
 import fs from 'fs'
 import { format, iconCategories } from '../helpers'
-import {
-  categoriesIndexTemplate,
-  categoryIndexTemplate,
-  iconVariantTypeExportTemplate,
-} from '../templates/index-template'
+import { categoriesIndexTemplate, categoryIndexTemplate } from '../templates/index-template'
 
 const fsPromises = fs.promises
 
@@ -54,14 +50,11 @@ async function generateCategoryIndexFiles() {
       return
     }
 
-    // 生成索引文件内容
-    // 1. 导出所有组件
+    // 生成索引文件内容：只导出组件
+    // 注意：IconVariant 类型现在从 src/components/createIconComponent 导出
     const componentExports = componentNames.map((name) => categoryIndexTemplate(name)).join('\n')
 
-    // 2. 从第一个组件导出 IconVariant 类型（只需导出一次）
-    const typeExport = iconVariantTypeExportTemplate(componentNames[0])
-
-    const indexContent = `${componentExports}\n\n${typeExport}`
+    const indexContent = componentExports
 
     // 格式化并写入文件
     const formattedContent = await format(indexContent)
@@ -77,7 +70,8 @@ async function generateCategoryIndexFiles() {
 
 /**
  * 生成根索引文件
- * 在 src/icons/index.ts 中重新导出所有分类模块，并导出 IconVariant 类型
+ * 在 src/icons/index.ts 中重新导出所有分类模块
+ * 注意：IconVariant 类型现在从 src/components/createIconComponent 导出
  */
 async function generateRootIndexFile() {
   // 生成分类导出语句
@@ -85,12 +79,7 @@ async function generateRootIndexFile() {
     .map((category) => categoriesIndexTemplate(category))
     .join('\n')
 
-  // 添加 IconVariant 类型导出
-  // 从第一个分类的第一个组件中重新导出类型
-  const typeExport = `// 导出 IconVariant 类型定义
-export type { IconVariant } from './${iconCategories[0]}'`
-
-  const indexContent = `${categoryExports}\n\n${typeExport}\n`
+  const indexContent = `${categoryExports}\n`
 
   // 格式化并写入文件
   const formattedContent = await format(indexContent)

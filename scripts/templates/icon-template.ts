@@ -15,6 +15,8 @@ export function getCssClassName(iconName: string, variant: IconVariant): string 
 
 /**
  * 生成支持多变体的统一图标组件模板
+ * 使用 createIconComponent 工厂函数，生成最小化的图标组件
+ *
  * @param svgContents 各变体的 SVG 内容映射
  * @param iconName 原始图标名称（用于生成 CSS 类名）
  * @param componentName 组件名称（已处理重名）
@@ -24,61 +26,28 @@ export function iconTemplate(
   iconName: string,
   componentName: string,
 ): string {
-  const baseClassName = getClassName(iconName)
   const variants = Object.keys(svgContents) as IconVariant[]
 
-  // 生成 SVG 映射对象
+  // 生成 SVG 映射对象条目
   const svgMapEntries = variants
     .map((variant) => {
       const svg = svgContents[variant]
 
-      return `      ${variant}: () => (${svg})`
+      return `    ${variant}: () => (${svg})`
     })
     .join(',\n')
 
-  // 确定默认变体（优先使用 filled，否则使用第一个可用变体）
-  const defaultVariant = variants.includes('filled') ? 'filled' : variants[0]
+  // 从 iconName 提取用于 CSS 类名的名称（不带 mdi- 前缀）
+  // getClassName 返回 'mdi-xxx'，我们需要 'xxx' 部分
+  const cssIconName = getClassName(iconName).replace(/^mdi-/, '')
 
-  return `import { defineComponent, type PropType, type VNode } from 'vue'
-import { MDIcon } from '../../components/MDIcon'
+  return `import { createIconComponent } from '../../components/createIconComponent'
 
-export type IconVariant = 'filled' | 'outlined' | 'round' | 'sharp' | 'twotone'
-
-export const ${componentName} = defineComponent({
+export const ${componentName} = createIconComponent({
   name: '${componentName}',
-  props: {
-    variant: {
-      type: String as PropType<IconVariant>,
-      default: '${defaultVariant}',
-    },
-  },
-  setup(props) {
-    const svgMap: Partial<Record<IconVariant, () => VNode>> = {
+  iconName: '${cssIconName}',
+  svgMap: {
 ${svgMapEntries}
-    }
-
-    const availableVariants: IconVariant[] = [${variants.map((v) => `'${v}'`).join(', ')}]
-
-    return () => {
-      // 确定要使用的变体：如果请求的变体不可用，回退到默认变体
-      const requestedVariant = props.variant
-      const variant = availableVariants.includes(requestedVariant)
-        ? requestedVariant
-        : '${defaultVariant}'
-
-      // 生成 CSS 类名：filled 使用 mdi-{name}，其他使用 mdi-{name}-{variant}
-      const className = variant === 'filled'
-        ? '${baseClassName}'
-        : \`${baseClassName}-\${variant}\`
-
-      const renderSvg = svgMap[variant]
-
-      return (
-        <MDIcon class={className}>
-          {renderSvg ? renderSvg() : null}
-        </MDIcon>
-      )
-    }
   },
 })
 `

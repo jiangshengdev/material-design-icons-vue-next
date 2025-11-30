@@ -1,5 +1,11 @@
-export { MDIcon } from './components/MDIcon'
-export * from './icons'
+// 导出组件和工厂函数
+export {
+  MDIcon,
+  createIconComponent,
+  type IconVariant,
+  type SvgMap,
+  type IconDefinition,
+} from './components'
 
-// 显式导出 IconVariant 类型，方便用户直接导入
-export type { IconVariant } from './icons'
+// 导出所有图标组件
+export * from './icons'
