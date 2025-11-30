@@ -56,10 +56,8 @@ async function generateCategoryIndexFiles() {
     // 生成索引文件内容：只导出组件
     const componentExports = componentNames.map((name) => categoryIndexTemplate(name)).join('\n')
 
-    const indexContent = componentExports
-
     // 格式化并写入文件
-    const formattedContent = await format(indexContent)
+    const formattedContent = await format(componentExports)
     const indexPath = path.join(categoryPath, 'index.ts')
 
     await fsPromises.writeFile(indexPath, formattedContent)
