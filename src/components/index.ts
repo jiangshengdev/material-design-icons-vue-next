@@ -4,4 +4,5 @@ export {
   type IconVariant,
   type SvgMap,
   type IconDefinition,
+  type IconComponent,
 } from './createIconComponent'

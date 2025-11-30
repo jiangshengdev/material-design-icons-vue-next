@@ -1,4 +1,4 @@
-import { defineComponent, type PropType, type VNode } from 'vue'
+import { defineComponent, type DefineComponent, type PropType, type VNode } from 'vue'
 import { MDIcon } from './MDIcon'
 
 /**
@@ -25,12 +25,17 @@ export interface IconDefinition {
 }
 
 /**
+ * 图标组件类型 - 所有图标共享此类型，避免重复的类型定义
+ */
+export type IconComponent = DefineComponent<{ variant?: IconVariant }>
+
+/**
  * 创建图标组件的工厂函数
  *
  * @param definition - 图标定义对象
  * @returns Vue 组件
  */
-export function createIconComponent(definition: IconDefinition) {
+export function createIconComponent(definition: IconDefinition): IconComponent {
   const { name, iconName, svgMap } = definition
   const availableVariants = Object.keys(svgMap) as IconVariant[]
   const defaultVariant: IconVariant = availableVariants.includes('filled')
@@ -48,7 +53,7 @@ export function createIconComponent(definition: IconDefinition) {
     },
     setup(props) {
       return () => {
-        const requestedVariant = props.variant
+        const requestedVariant = props.variant!
         const variant: IconVariant = availableVariants.includes(requestedVariant)
           ? requestedVariant
           : defaultVariant
@@ -60,5 +65,5 @@ export function createIconComponent(definition: IconDefinition) {
         return <MDIcon class={className}>{renderSvg ? renderSvg() : null}</MDIcon>
       }
     },
-  })
+  }) as IconComponent
 }
