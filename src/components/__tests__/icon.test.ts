@@ -29,7 +29,7 @@ describe('icon', () => {
       ).sort()
 
       for (const file of files) {
-        const relativePath = path.join('..', typePath, file)
+        const relativePath = path.join('../../icons', type, file)
         const imported = await import(relativePath)
         const component = imported[path.basename(file, ext)]
         const wrapper = mount(component)
