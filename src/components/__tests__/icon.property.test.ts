@@ -449,7 +449,7 @@ describe('Material Icons v4 属性测试', () => {
 
           // 验证导出语句格式
           expect(exportStatement).toMatch(
-            /^export \{ MDI[A-Za-z0-9]+ \} from '\.\/MDI[A-Za-z0-9]+'$/,
+            /^export \{ MDI[A-Za-z0-9]+ } from '\.\/MDI[A-Za-z0-9]+'$/,
           )
 
           // 验证组件名称一致性
