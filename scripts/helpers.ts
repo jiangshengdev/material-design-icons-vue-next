@@ -10,6 +10,11 @@ const __dirname = path.dirname(__filename)
 const prettierConfigPath = '../.prettierrc.json'
 const projectRoot = path.resolve(__dirname, '..')
 const iconSourceRoot = path.resolve(projectRoot, 'material-design-icons-4.0.0/src')
+const naturalCollator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' })
+
+export function naturalCompare(a: string, b: string) {
+  return naturalCollator.compare(a, b)
+}
 
 // 图标变体类型定义
 export type IconVariant = 'filled' | 'outlined' | 'round' | 'sharp' | 'twotone'
@@ -53,7 +58,7 @@ function detectIconCategories() {
   const categories = entries
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)
-    .sort()
+    .sort(naturalCompare)
 
   if (categories.length === 0) {
     throw new Error(`未在 ${iconSourceRoot} 中发现任何图标分类目录`)

@@ -3,7 +3,7 @@ import fs from 'fs'
 import { glob } from 'tinyglobby'
 import pMap from 'p-map'
 import consola from 'consola'
-import { format, iconCategories, getListName } from '../helpers'
+import { format, iconCategories, getListName, naturalCompare } from '../helpers'
 import {
   itemTemplate,
   listTemplate,
@@ -39,7 +39,7 @@ async function scanCategoryIcons(category: string): Promise<string[]> {
       return parts[0]
     })
 
-    return iconNames.sort()
+    return iconNames.sort(naturalCompare)
   } catch (error) {
     consola.warn(`无法扫描分类 "${category}":`, error)
 

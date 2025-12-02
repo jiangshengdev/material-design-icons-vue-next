@@ -4,7 +4,7 @@ import pMap from 'p-map'
 import consola from 'consola'
 import { iconTemplate } from '../templates/icon-template'
 import { readAndConvertSvg } from '../utils/svg-converter'
-import { format } from '../helpers'
+import { format, naturalCompare } from '../helpers'
 import {
   iconCategories,
   VARIANT_DIR_MAP,
@@ -30,20 +30,22 @@ async function scanCategory(category: string): Promise<IconInfo[]> {
 
   try {
     const entries = await fsPromises.readdir(categoryPath, { withFileTypes: true })
+    const iconEntries = entries
+      .filter((entry) => entry.isDirectory())
+      .sort((a, b) => naturalCompare(a.name, b.name))
 
-    for (const entry of entries) {
-      if (!entry.isDirectory()) continue
-
+    for (const entry of iconEntries) {
       const iconName = entry.name
       const iconPath = path.join(categoryPath, iconName)
       const variants: Partial<Record<IconVariant, string>> = {}
 
       // 扫描该图标的所有变体目录
       const variantEntries = await fsPromises.readdir(iconPath, { withFileTypes: true })
+      const sortedVariantEntries = variantEntries
+        .filter((variantEntry) => variantEntry.isDirectory())
+        .sort((a, b) => naturalCompare(a.name, b.name))
 
-      for (const variantEntry of variantEntries) {
-        if (!variantEntry.isDirectory()) continue
-
+      for (const variantEntry of sortedVariantEntries) {
         const variantDirName = variantEntry.name
         const variant = VARIANT_DIR_MAP[variantDirName]
 

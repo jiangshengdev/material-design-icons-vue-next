@@ -3,7 +3,7 @@ import fs from 'fs'
 import { fileURLToPath } from 'url'
 import { glob } from 'tinyglobby'
 import consola from 'consola'
-import { format, iconCategories } from '../helpers'
+import { format, iconCategories, naturalCompare } from '../helpers'
 import { categoriesIndexTemplate, categoryIndexTemplate } from '../templates/index-template'
 
 const fsPromises = fs.promises
@@ -27,8 +27,7 @@ async function scanCategoryComponents(categoryPath: string): Promise<string[]> {
     // 从文件名提取组件名称（去掉 .tsx 后缀）
     const componentNames = files.map((file) => file.replace('.tsx', ''))
 
-    // 按字母顺序排序
-    return componentNames.sort()
+    return componentNames.sort(naturalCompare)
   } catch (error) {
     consola.warn(`无法读取分类目录: ${categoryPath}`, error)
 
