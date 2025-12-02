@@ -8,6 +8,8 @@ const fsPromises = fs.promises
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const prettierConfigPath = '../.prettierrc.json'
+const projectRoot = path.resolve(__dirname, '..')
+const iconSourceRoot = path.resolve(projectRoot, 'material-design-icons-4.0.0/src')
 
 // 图标变体类型定义
 export type IconVariant = 'filled' | 'outlined' | 'round' | 'sharp' | 'twotone'
@@ -39,25 +41,28 @@ export const VARIANT_TO_DIR: Record<IconVariant, string> = {
   twotone: 'materialiconstwotone',
 }
 
-export const iconCategories = [
-  'action',
-  'alert',
-  'av',
-  'communication',
-  'content',
-  'device',
-  'editor',
-  'file',
-  'hardware',
-  'home',
-  'image',
-  'maps',
-  'navigation',
-  'notification',
-  'places',
-  'social',
-  'toggle',
-]
+function detectIconCategories() {
+  let entries: fs.Dirent[]
+
+  try {
+    entries = fs.readdirSync(iconSourceRoot, { withFileTypes: true })
+  } catch (error) {
+    throw new Error(`读取图标分类目录失败: ${iconSourceRoot}. ${(error as Error).message}`)
+  }
+
+  const categories = entries
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort()
+
+  if (categories.length === 0) {
+    throw new Error(`未在 ${iconSourceRoot} 中发现任何图标分类目录`)
+  }
+
+  return categories
+}
+
+export const iconCategories = detectIconCategories()
 
 // 4.0 版本的 SVG 路径模式: {variant}/24px.svg
 function nameNormalize(name: string) {
