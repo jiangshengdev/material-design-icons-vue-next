@@ -21,6 +21,8 @@ const builderOptions = {
 const parser = new XMLParser(parserOptions)
 const builder = new XMLBuilder(builderOptions)
 
+type ParsedNode = Record<string, unknown>
+
 /**
  * 转换 SVG 内容，设置正确的属性
  * - 设置 fill="currentColor"
@@ -57,11 +59,54 @@ export function convertSvg(xml: string): string | null {
       }
     }
 
+    sanitizeNodes(parsed)
+
     return builder.build(parsed)
   } catch (error) {
     consola.warn('SVG 解析失败:', error)
 
     return null
+  }
+}
+
+function sanitizeNodes(nodes: ParsedNode[]): void {
+  for (const node of nodes) {
+    const attrs = node[':@'] as Record<string, unknown> | undefined
+
+    if (attrs) {
+      normalizeAttributes(attrs)
+      node[':@'] = attrs
+    }
+
+    for (const [childKey, childValue] of Object.entries(node)) {
+      if (childKey === ':@') {
+        continue
+      }
+
+      if (Array.isArray(childValue)) {
+        sanitizeNodes(childValue as ParsedNode[])
+      }
+    }
+  }
+}
+
+function normalizeAttributes(attrs: Record<string, unknown>): void {
+  for (const key of Object.keys(attrs)) {
+    if (key === '@_xmlns') {
+      delete attrs[key]
+      continue
+    }
+
+    if (key === '@_xlink:href') {
+      attrs['@_href'] = attrs[key]
+      delete attrs[key]
+
+      continue
+    }
+
+    if (key.includes(':')) {
+      delete attrs[key]
+    }
   }
 }
 
